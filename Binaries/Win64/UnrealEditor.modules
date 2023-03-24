@@ -1,0 +1,8 @@
+{
+	"BuildId": "23058290",
+	"Modules": 
+	{
+		"StudioGame": "UnrealEditor-StudioGame.dll",
+		"StudioGameplayAbilities": "UnrealEditor-StudioGameplayAbilities.dll"
+	}
+}
