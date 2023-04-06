@@ -16,7 +16,7 @@ class STUDIOGAME_API UStudioGameBlueprintLibrary : public UBlueprintFunctionLibr
 
 public:
 	UFUNCTION(BlueprintCallable, Category = StudioGame)
-	static void ReadContentImage(FString ImageRelativePath, UTexture2DDynamic*& Texture);
+	static void LoadTexture(const FString& ImageRelativePath, UTexture2DDynamic*& Texture);
 
 	UFUNCTION(BlueprintCallable, Category = StudioGame)
 	static void RequestExitGame(bool bForce);
@@ -37,10 +37,10 @@ public:
 	static void ClipboardPaste(FString& Dest);
 
 	UFUNCTION(BlueprintCallable, Category = StudioGame)
-	static float GetFPS();
+	static float GetAverageFPS();
 
 	UFUNCTION(BlueprintCallable, Category = StudioGame)
-	static float GetMS();
+	static float GetAverageMS();
 
 	UFUNCTION(BlueprintCallable, Category = StudioGame)
 	static int64 GetApplicationMemoryUsage();
@@ -53,4 +53,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = StudioGame)
 	static void StopVideoRecording(const FText& Title, const FText& Comment);
+
+	UFUNCTION(BlueprintCallable, Category = StudioGame)
+	static int64 GetUnixTimestamp();
 };

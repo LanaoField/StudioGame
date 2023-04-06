@@ -45,7 +45,7 @@ static void WriteRawDataToTexture_RenderThread(FTexture2DDynamicResource* Textur
 }
 #endif
 
-void UStudioGameBlueprintLibrary::ReadContentImage(FString ImageRelativePath, UTexture2DDynamic *& Texture)
+void UStudioGameBlueprintLibrary::LoadTexture(const FString& ImageRelativePath, UTexture2DDynamic*& Texture)
 {
 #if !UE_SERVER
 	FString ImageFullPath = FPaths::Combine(*FPaths::ProjectContentDir(), *ImageRelativePath);
@@ -145,13 +145,13 @@ void UStudioGameBlueprintLibrary::ClipboardPaste(FString& Dest)
 	FPlatformApplicationMisc::ClipboardPaste(Dest);
 }
 
-float UStudioGameBlueprintLibrary::GetFPS()
+float UStudioGameBlueprintLibrary::GetAverageFPS()
 {
 	extern ENGINE_API float GAverageFPS;
 	return GAverageFPS;
 }
 
-float UStudioGameBlueprintLibrary::GetMS()
+float UStudioGameBlueprintLibrary::GetAverageMS()
 {
 	extern ENGINE_API float GAverageMS;
 	return GAverageMS;
@@ -188,4 +188,12 @@ void UStudioGameBlueprintLibrary::StopVideoRecording(const FText& Title, const F
 {
 	IVideoRecordingSystem* VideoRecordSystem = IPlatformFeaturesModule::Get().GetVideoRecordingSystem();
 	VideoRecordSystem->FinalizeRecording(true, Title, Comment);
+}
+
+int64 UStudioGameBlueprintLibrary::GetUnixTimestamp()
+{
+	int64 NowTicks = FDateTime::UtcNow().GetTicks();
+	int64 UnixTicks = FDateTime(1970, 1, 1).GetTicks();
+
+	return (NowTicks - UnixTicks) / ETimespan::TicksPerMillisecond;
 }

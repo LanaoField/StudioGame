@@ -2,6 +2,7 @@
 
 #include "Components/CharacterMovementComponentEx.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/Character.h"
 #include "Interfaces/CharacterMovementExInterce.h"
 #include "Engine/EngineTypes.h"
 
