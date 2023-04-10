@@ -12,7 +12,7 @@ struct FWidgetLayer
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, Instanced, Category = "WidgetLayer")
-	TArray<TObjectPtr<UWidget>> Widgets;
+	TArray<UWidget*> Widgets;
 };
 
 /**
