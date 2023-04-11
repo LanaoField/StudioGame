@@ -6,6 +6,24 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "StudioGameBlueprintLibrary.generated.h"
 
+UENUM(BlueprintType)
+enum class EModifyScreenOrientation : uint8
+{
+	Unknown,
+
+	/** Portrait orientation (the display is taller than it is wide). */
+	Portrait,
+
+	/** The orientation is landscape with the home button at the right side */
+	LandscapeLeft,
+
+	/** The orientation is landscape with the home button at the left side */
+	LandscapeRight,
+
+	/** Use any orientation the device normally supports, based on the device orientation sensor. */
+	Sensor, 
+};
+
 /**
  * 
  */
@@ -56,4 +74,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = StudioGame)
 	static int64 GetUnixTimestamp();
+
+	UFUNCTION(BlueprintCallable, Category = StudioGame)
+	static void SetDeviceOrientation(EModifyScreenOrientation InScreenOrientation);
 };

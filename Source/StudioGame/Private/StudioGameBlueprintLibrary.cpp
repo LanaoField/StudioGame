@@ -12,6 +12,10 @@
 #include "Misc/FileHelper.h"
 #include "HAL/PlatformApplicationMisc.h"
 
+#if PLATFORM_ANDROID
+#include "Android/AndroidJNI.h"
+#include "Android/AndroidApplication.h"
+#endif
 
 #if !UE_SERVER
 static void WriteRawDataToTexture_RenderThread(FTexture2DDynamicResource* TextureResource, const TArray<uint8>& RawData, bool bUseSRGB = true)
@@ -196,4 +200,37 @@ int64 UStudioGameBlueprintLibrary::GetUnixTimestamp()
 	int64 UnixTicks = FDateTime(1970, 1, 1).GetTicks();
 
 	return (NowTicks - UnixTicks) / ETimespan::TicksPerMillisecond;
+}
+
+void UStudioGameBlueprintLibrary::SetDeviceOrientation(EModifyScreenOrientation InScreenOrientation)
+{
+#if PLATFORM_ANDROID
+	int32 Value = -1;
+	switch (InScreenOrientation)
+	{
+	case EModifyScreenOrientation::Unknown:
+		Value = -1;
+		break;
+	case EModifyScreenOrientation::Portrait:
+		Value = 1;
+		break;
+	case EModifyScreenOrientation::LandscapeLeft:
+		Value = 0;
+		break;
+	case EModifyScreenOrientation::LandscapeRight:
+		Value = 8;
+		break;
+	case EModifyScreenOrientation::Sensor:
+		Value = 4;
+		break;
+	}
+
+	if (Value > -1)
+	{
+		if (JNIEnv* Env = FAndroidApplication::GetJavaEnv())
+		{
+			FJavaWrapper::CallVoidMethod(Env, FJavaWrapper::GameActivityThis, FJavaWrapper::AndroidThunkJava_SetOrientation, Value);
+		}
+	}
+#endif
 }

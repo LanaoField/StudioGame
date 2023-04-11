@@ -40,7 +40,8 @@ public class StudioGame : ModuleRules
 				"Core",
                 "ImageWrapper",
                 "RHI",
-                "RenderCore"
+                "RenderCore",
+                "Launch"
             }
 		);
 			
