@@ -76,5 +76,5 @@ public:
 	static int64 GetUnixTimestamp();
 
 	UFUNCTION(BlueprintCallable, Category = StudioGame)
-	static void SetDeviceOrientation(EModifyScreenOrientation InScreenOrientation);
+	static void SetDeviceOrientation(EModifyScreenOrientation inScreenOrientation);
 };
