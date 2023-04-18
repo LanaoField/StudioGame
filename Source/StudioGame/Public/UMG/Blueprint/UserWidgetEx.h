@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Blueprint/UserWidget.h"
+#include "Styling/SlateBrush.h"
 #include "UserWidgetEx.generated.h"
 
 
@@ -26,15 +27,22 @@ class STUDIOGAME_API UUserWidgetEx : public UUserWidget
 public:
 #if WITH_EDITOR
 	// UObject interface
-	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent);
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+
 	// End of UObject interface
 #endif
 
 	virtual bool Initialize() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
-	virtual void SetFocusWidget(int32 DeltaRaw, int32 DeltaColumn);
-	virtual void OnFocusWidgetChanged(UWidget* OldWidget, UWidget* NewWidget);
+	virtual void SetVisibility(ESlateVisibility InVisibility) override;
+
+	UFUNCTION(BlueprintCallable, Category = "User Interface|Ex")
+	virtual void SetFocusWidget(int32 DeltaRaw = 0, int32 DeltaColumn = 0);
+
+	UFUNCTION(BlueprintNativeEvent, Category = "User Interface|Ex")
+	void OnFocusWidgetChanged(UWidget* OldWidget, UWidget* NewWidget);
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "User Interface|Ex")
@@ -62,10 +70,14 @@ protected:
 	TArray<FName> WidgetNames;
 
 private:
-	int32 RawIndex;
+	int32 RowIndex;
 
 	int32 ColumnIndex;
 
+	FSlateBrush ButtonStyleHoveredCache;
+
 	UPROPERTY()
 	UWidget* FocusWidget;
+
+	static TArray<TWeakObjectPtr<UUserWidgetEx>> UserWidgets;
 };

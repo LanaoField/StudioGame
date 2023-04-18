@@ -2,13 +2,16 @@
 
 #include "Blueprint/UserWidgetEx.h"
 #include "Components/Button.h"
-
+#include "Styling/SlateWidgetStyle.h"
+#include "Kismet/GameplayStatics.h"
 
 #define LOCTEXT_NAMESPACE "UMG"
 
+TArray<TWeakObjectPtr<UUserWidgetEx>> UUserWidgetEx::UserWidgets;
+
 UUserWidgetEx::UUserWidgetEx(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
-	, RawIndex(0)
+	, RowIndex(0)
 	, ColumnIndex(0)
 {
 	bIsFocusable = true;
@@ -24,13 +27,17 @@ UUserWidgetEx::UUserWidgetEx(const FObjectInitializer& ObjectInitializer)
 }
 
 #if WITH_EDITOR
-void UUserWidgetEx::PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent)
+void UUserWidgetEx::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
 {
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
 	const FName PropertyName = (PropertyChangedEvent.Property != nullptr) ? PropertyChangedEvent.Property->GetFName() : NAME_None;
 	const FName MemberPropertyName = (PropertyChangedEvent.MemberProperty != nullptr) ? PropertyChangedEvent.MemberProperty->GetFName() : NAME_None;
 
+	const FName WidgetNamesName = GET_MEMBER_NAME_CHECKED(UUserWidgetEx, WidgetNames);
 	const FName WidgetLayersName = GET_MEMBER_NAME_CHECKED(UUserWidgetEx, WidgetLayers);
-	if (MemberPropertyName == TEXT("Widgets") || MemberPropertyName == TEXT("WidgetLayers"))
+	const FName MaxColumnName = GET_MEMBER_NAME_CHECKED(UUserWidgetEx, MaxColumn);
+	if (MemberPropertyName == WidgetLayersName)
 	{
 		int32 RawCount = WidgetLayers.Num();
 
@@ -65,32 +72,20 @@ void UUserWidgetEx::PostEditChangeChainProperty(struct FPropertyChangedChainEven
 			WidgetNames.Add(*GetNameSafe(Widget));
 		}
 
-		const FName MaxColumnName = GET_MEMBER_NAME_CHECKED(UUserWidgetEx, MaxColumn);
-		const FName WidgetNamesName = GET_MEMBER_NAME_CHECKED(UUserWidgetEx, WidgetNames);
 		for (TFieldIterator<FProperty> It(this->GetClass()); It; ++It)
 		{
-			if (!It->GetName().Equals(WidgetNamesName.ToString()) &&
-				!It->GetName().Equals(MaxColumnName.ToString()))
+			if (It->GetName().Equals(WidgetNamesName.ToString()))
 			{
-				continue;
+				FPropertyChangedEvent ChangedEvent(*It, EPropertyChangeType::ArrayAdd);
+				PostEditChangeProperty(ChangedEvent);
 			}
-
-			FEditPropertyChain Chain;
-			Chain.AddHead(*It);
-			
-			TArrayView<const UObject* const> TopLevelObjects = { this };
-			FPropertyChangedEvent Event(*It, EPropertyChangeType::ValueSet, TopLevelObjects);
-
-			FPropertyChangedChainEvent ChangedEvent(Chain, Event);
-			ChangedEvent.ObjectIteratorIndex = 0;
-
-			PostEditChangeChainProperty(ChangedEvent);
+			else if (It->GetName().Equals(MaxColumnName.ToString()))
+			{
+				FPropertyChangedEvent ChangedEvent(*It, EPropertyChangeType::ArrayAdd);
+				PostEditChangeProperty(ChangedEvent);
+			}
 		}
-
-		Modify();
 	}
-
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
 }
 #endif
 
@@ -126,11 +121,22 @@ bool UUserWidgetEx::Initialize()
 	return bInitialize;
 }
 
-void UUserWidgetEx::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+void UUserWidgetEx::NativeConstruct()
 {
-	Super::NativeTick(MyGeometry, InDeltaTime);
+	Super::NativeConstruct();
 
+	bIsFocusable = true;
 	SetKeyboardFocus();
+	SetFocusWidget();
+
+	UserWidgets.Add(this);
+}
+
+void UUserWidgetEx::NativeDestruct()
+{
+	UserWidgets.Remove(this);
+
+	Super::NativeDestruct();
 }
 
 FReply UUserWidgetEx::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
@@ -164,7 +170,7 @@ FReply UUserWidgetEx::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEve
 		}
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("RawIndex: %d ColumnIndex: %d FocusWidget: %s"), RawIndex, ColumnIndex, *GetNameSafe(FocusWidget));
+	UE_LOG(LogTemp, Log, TEXT("RowIndex: %d ColumnIndex: %d FocusWidget: %s"), RowIndex, ColumnIndex, *GetNameSafe(FocusWidget));
 
 	return Super::NativeOnKeyDown(InGeometry, InKeyEvent);
 }
@@ -174,14 +180,14 @@ void UUserWidgetEx::SetFocusWidget(int32 DeltaRaw, int32 DeltaColumn)
 	UWidget* OldWidget = FocusWidget;
 
 	int32 RawCount = WidgetLayers.Num();
-	RawIndex = FMath::Clamp(RawIndex + DeltaRaw, 0, RawCount);
+	RowIndex = FMath::Clamp(RowIndex + DeltaRaw, 0, RawCount - 1);
 
-	if (RawCount > 0 && WidgetLayers.IsValidIndex(RawIndex))
+	if (RawCount > 0 && WidgetLayers.IsValidIndex(RowIndex))
 	{
-		const FWidgetLayer& WidgetLayer = WidgetLayers[RawIndex];
+		const FWidgetLayer& WidgetLayer = WidgetLayers[RowIndex];
 
 		int32 ColumnCount = WidgetLayer.Widgets.Num();
-		ColumnIndex = FMath::Clamp(ColumnIndex + DeltaColumn, 0, ColumnCount);
+		ColumnIndex = FMath::Clamp(ColumnIndex + DeltaColumn, 0, ColumnCount - 1);
 
 		if (WidgetLayer.Widgets.IsValidIndex(ColumnIndex))
 		{
@@ -192,17 +198,69 @@ void UUserWidgetEx::SetFocusWidget(int32 DeltaRaw, int32 DeltaColumn)
 	OnFocusWidgetChanged(OldWidget, FocusWidget);
 }
 
-void UUserWidgetEx::OnFocusWidgetChanged(UWidget* OldWidget, UWidget* NewWidget)
+void UUserWidgetEx::OnFocusWidgetChanged_Implementation(UWidget* OldWidget, UWidget* NewWidget)
 {
 	if (OldWidget)
 	{
-
+		UButton* Button = Cast<UButton>(OldWidget);
+		if (Button != nullptr)
+		{
+			Button->WidgetStyle.Normal = ButtonStyleHoveredCache;
+		}
 	}
 
 	if (NewWidget)
 	{
+		UButton* Button = Cast<UButton>(NewWidget);
+		if (Button != nullptr)
+		{
+			ButtonStyleHoveredCache = Button->WidgetStyle.Normal;
 
+			Button->WidgetStyle.Normal = Button->WidgetStyle.Hovered;
+		}
+		NewWidget->SetFocus();
 	}
+}
+
+void UUserWidgetEx::SetVisibility(ESlateVisibility InVisibility)
+{
+	ESlateVisibility OldVisibility = GetVisibility();
+
+	Super::SetVisibility(InVisibility);
+
+	ESlateVisibility NewVisibility = GetVisibility();
+
+	if (OldVisibility != NewVisibility)
+	{
+		if (NewVisibility == ESlateVisibility::Collapsed || NewVisibility == ESlateVisibility::Hidden)
+		{
+			bIsFocusable = false;
+
+			UserWidgets.Remove(this);
+		}
+		else
+		{
+			bIsFocusable = true;
+
+			UserWidgets.Remove(this);
+			UserWidgets.Insert(this, 0);
+		}
+	}
+
+	TWeakObjectPtr<UUserWidgetEx> UserWidget = nullptr;
+	while (UserWidgets.Num() > 0 && !UserWidget.IsValid())
+	{
+		UserWidget = UserWidgets[0];
+		if (!UserWidget.IsValid())
+		{
+			UserWidgets.Remove(UserWidget);
+			continue;
+		}
+
+		UserWidget->SetFocusWidget();
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("Name: %s VisibilityChangedEvent :%d"), *GetNameSafe(this), InVisibility);
 }
 
 /////////////////////////////////////////////////////

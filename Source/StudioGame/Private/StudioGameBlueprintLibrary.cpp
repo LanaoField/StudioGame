@@ -202,11 +202,11 @@ int64 UStudioGameBlueprintLibrary::GetUnixTimestamp()
 	return (NowTicks - UnixTicks) / ETimespan::TicksPerMillisecond;
 }
 
-void UStudioGameBlueprintLibrary::SetDeviceOrientation(EModifyScreenOrientation inScreenOrientation)
+void UStudioGameBlueprintLibrary::SetDeviceOrientation(EModifyScreenOrientation InScreenOrientation)
 {
 #if PLATFORM_ANDROID
 	int32 Value = -1;
-	switch (inScreenOrientation)
+	switch (InScreenOrientation)
 	{
 	case EModifyScreenOrientation::Unknown:
 		Value = -1;
