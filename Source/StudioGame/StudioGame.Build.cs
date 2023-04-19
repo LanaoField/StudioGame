@@ -41,7 +41,8 @@ public class StudioGame : ModuleRules
                 "ImageWrapper",
                 "RHI",
                 "RenderCore",
-                "Launch"
+                "Launch",
+                "OnlineSubsystem"
             }
 		);
 			
@@ -60,7 +61,7 @@ public class StudioGame : ModuleRules
                 "ApplicationCore",
                 "NavigationSystem",
                 "HeadMountedDisplay"
-			}
+            }
 		);
 
 
