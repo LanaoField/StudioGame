@@ -77,4 +77,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = StudioGame)
 	static void SetDeviceOrientation(EModifyScreenOrientation InScreenOrientation);
+
+	UFUNCTION(BlueprintCallable, Category = StudioGame)
+	static FString GetSubsystemAppId(FName InSubsystemName);
+
+	UFUNCTION(BlueprintCallable, Category = StudioGame)
+	static FString GetSubsystemAuthToken(int32 InLocalUserNum, FName InSubsystemName);
 };

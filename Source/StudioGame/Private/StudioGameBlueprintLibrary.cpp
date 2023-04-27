@@ -3,15 +3,16 @@
 #include "StudioGameBlueprintLibrary.h"
 #include "Engine.h"
 #include "RHIResources.h"
-#include "Engine/Texture2DDynamic.h"
-#include "Modules/ModuleManager.h"
+#include "OnlineSubsystem.h"
+#include "Interfaces/OnlineIdentityInterface.h"
 #include "IImageWrapper.h"
 #include "IImageWrapperModule.h"
+#include "Engine/Texture2DDynamic.h"
+#include "Modules/ModuleManager.h"
 #include "PlatformFeatures.h"
 #include "VideoRecordingSystem.h"
 #include "Misc/FileHelper.h"
 #include "HAL/PlatformApplicationMisc.h"
-
 #if PLATFORM_ANDROID
 #include "Android/AndroidJNI.h"
 #include "Android/AndroidApplication.h"
@@ -233,4 +234,35 @@ void UStudioGameBlueprintLibrary::SetDeviceOrientation(EModifyScreenOrientation 
 		}
 	}
 #endif
+}
+
+FString UStudioGameBlueprintLibrary::GetSubsystemAppId(FName InSubsystemName)
+{
+	IOnlineSubsystem* OnlineSubsystem = IOnlineSubsystem::Get(InSubsystemName);
+	if (OnlineSubsystem == nullptr)
+	{
+		FFrame::KismetExecutionMessage(*FString::Printf(TEXT("OnlineSubsystem %s is null"), *InSubsystemName.ToString()), ELogVerbosity::Warning);
+		return TEXT("");
+	}
+
+	return OnlineSubsystem->GetAppId();
+}
+
+FString UStudioGameBlueprintLibrary::GetSubsystemAuthToken(int32 InLocalUserNum, FName InSubsystemName)
+{
+	IOnlineSubsystem* OnlineSubsystem = IOnlineSubsystem::Get(InSubsystemName);
+	if (OnlineSubsystem == nullptr)
+	{
+		FFrame::KismetExecutionMessage(*FString::Printf(TEXT("OnlineSubsystem %s is null"), *InSubsystemName.ToString()), ELogVerbosity::Warning);
+		return TEXT("");
+	}
+
+	IOnlineIdentityPtr OnlineIdentity = OnlineSubsystem->GetIdentityInterface();
+	if (!OnlineIdentity.IsValid())
+	{
+		FFrame::KismetExecutionMessage(*FString::Printf(TEXT("GetSubsystemAuthToken not supported by the %s online subsystem"), *InSubsystemName.ToString()), ELogVerbosity::Warning);
+		return TEXT("");
+	}
+
+	return OnlineIdentity->GetAuthToken(InLocalUserNum);
 }
