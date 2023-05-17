@@ -170,7 +170,7 @@ FReply UUserWidgetEx::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEve
 		}
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("RowIndex: %d ColumnIndex: %d FocusWidget: %s"), RowIndex, ColumnIndex, *GetNameSafe(FocusWidget));
+	//UE_LOG(LogTemp, Log, TEXT("RowIndex: %d ColumnIndex: %d FocusWidget: %s"), RowIndex, ColumnIndex, *GetNameSafe(FocusWidget));
 
 	return Super::NativeOnKeyDown(InGeometry, InKeyEvent);
 }

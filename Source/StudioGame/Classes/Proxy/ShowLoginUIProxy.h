@@ -15,7 +15,7 @@
 class APlayerController;
 struct FOnlineError;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnlineShowLoginUIResult, APlayerController*, PlayerController);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FShowLoginUIResult, APlayerController*, PlayerController);
 
 UCLASS(MinimalAPI)
 class UShowLoginUIProxy : public UBlueprintAsyncActionBase
@@ -27,11 +27,11 @@ public:
 
 	// Called when there is a successful query
 	UPROPERTY(BlueprintAssignable)
-	FOnlineShowLoginUIResult OnSuccess;
+	FShowLoginUIResult OnSuccess;
 
 	// Called when there is an unsuccessful query
 	UPROPERTY(BlueprintAssignable)
-	FOnlineShowLoginUIResult OnFailure;
+	FShowLoginUIResult OnFailure;
 
 	// Shows the login UI for the currently active online subsystem, if the subsystem supports a login UI.
 	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true", WorldContext="WorldContextObject"), Category = "Online")

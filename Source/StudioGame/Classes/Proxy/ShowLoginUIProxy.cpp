@@ -108,4 +108,6 @@ void UShowLoginUIProxy::OnShowLoginUICompleted(FUniqueNetIdPtr UniqueId, int Loc
 	{
 		OnFailure.Broadcast(MyPlayerController);
 	}
+
+	SetReadyToDestroy();
 }

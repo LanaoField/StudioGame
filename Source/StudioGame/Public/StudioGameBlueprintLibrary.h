@@ -82,5 +82,8 @@ public:
 	static FString GetSubsystemAppId(FName InSubsystemName);
 
 	UFUNCTION(BlueprintCallable, Category = StudioGame)
-	static FString GetSubsystemAuthToken(int32 InLocalUserNum, FName InSubsystemName);
+	static FString GetSubsystemAuthToken(APlayerController* InPlayerController, FName InSubsystemName);
+
+	UFUNCTION(BlueprintCallable, Category = StudioGame)
+	static bool IsSubsystemLoggedIn(APlayerController* InPlayerController, FName InSubsystemName);
 };

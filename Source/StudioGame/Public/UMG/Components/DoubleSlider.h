@@ -7,15 +7,11 @@
 #include "StudioGameTypes.h"
 #include "Widgets/SWidget.h"
 #include "Animation/InputScaleBias.h"
-#include "Components/Widget.h"
+#include "Components/Slider.h"
 #include "DoubleSlider.generated.h"
 
 class SDoubleSlider;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMouseCaptureBeginEvent);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMouseCaptureEndEvent);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerCaptureBeginEvent);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnControllerCaptureEndEvent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInputRangeValueChangedEvent, FInputRange, Value);
 
 DECLARE_DYNAMIC_DELEGATE_RetVal(FInputRange, FGetInputRange);

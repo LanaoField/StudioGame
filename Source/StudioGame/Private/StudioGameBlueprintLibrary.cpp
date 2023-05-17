@@ -248,8 +248,21 @@ FString UStudioGameBlueprintLibrary::GetSubsystemAppId(FName InSubsystemName)
 	return OnlineSubsystem->GetAppId();
 }
 
-FString UStudioGameBlueprintLibrary::GetSubsystemAuthToken(int32 InLocalUserNum, FName InSubsystemName)
+FString UStudioGameBlueprintLibrary::GetSubsystemAuthToken(APlayerController* InPlayerController, FName InSubsystemName)
 {
+	if (InPlayerController == nullptr)
+	{
+		FFrame::KismetExecutionMessage(*FString::Printf(TEXT("PlayerController %s is null"), *InSubsystemName.ToString()), ELogVerbosity::Warning);
+		return TEXT("");
+	}
+
+	ULocalPlayer* Player = InPlayerController->GetLocalPlayer();
+	if (Player == nullptr)
+	{
+		FFrame::KismetExecutionMessage(*FString::Printf(TEXT("Player %s is null"), *InSubsystemName.ToString()), ELogVerbosity::Warning);
+		return TEXT("");
+	}
+
 	IOnlineSubsystem* OnlineSubsystem = IOnlineSubsystem::Get(InSubsystemName);
 	if (OnlineSubsystem == nullptr)
 	{
@@ -264,5 +277,39 @@ FString UStudioGameBlueprintLibrary::GetSubsystemAuthToken(int32 InLocalUserNum,
 		return TEXT("");
 	}
 
-	return OnlineIdentity->GetAuthToken(InLocalUserNum);
+	const int32 LocalUserNum = Player->GetControllerId();
+	return OnlineIdentity->GetAuthToken(LocalUserNum);
+}
+
+bool UStudioGameBlueprintLibrary::IsSubsystemLoggedIn(APlayerController* InPlayerController, FName InSubsystemName)
+{
+	if (InPlayerController == nullptr)
+	{
+		FFrame::KismetExecutionMessage(*FString::Printf(TEXT("PlayerController %s is null"), *InSubsystemName.ToString()), ELogVerbosity::Warning);
+		return false;
+	}
+
+	ULocalPlayer* Player = InPlayerController->GetLocalPlayer();
+	if (Player == nullptr)
+	{
+		FFrame::KismetExecutionMessage(*FString::Printf(TEXT("Player %s is null"), *InSubsystemName.ToString()), ELogVerbosity::Warning);
+		return false;
+	}
+
+	IOnlineSubsystem* OnlineSubsystem = IOnlineSubsystem::Get(InSubsystemName);
+	if (OnlineSubsystem == nullptr)
+	{
+		FFrame::KismetExecutionMessage(*FString::Printf(TEXT("OnlineSubsystem %s is null"), *InSubsystemName.ToString()), ELogVerbosity::Warning);
+		return false;
+	}
+
+	IOnlineIdentityPtr OnlineIdentity = OnlineSubsystem->GetIdentityInterface();
+	if (!OnlineIdentity.IsValid())
+	{
+		FFrame::KismetExecutionMessage(*FString::Printf(TEXT("GetSubsystemAuthToken not supported by the %s online subsystem"), *InSubsystemName.ToString()), ELogVerbosity::Warning);
+		return false;
+	}
+
+	const int32 LocalUserNum = Player->GetControllerId();
+	return OnlineIdentity->GetLoginStatus(LocalUserNum) == ELoginStatus::LoggedIn;
 }
