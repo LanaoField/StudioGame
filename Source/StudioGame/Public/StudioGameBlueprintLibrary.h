@@ -86,4 +86,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = StudioGame)
 	static bool IsSubsystemLoggedIn(APlayerController* InPlayerController, FName InSubsystemName);
+
+	UFUNCTION(BlueprintCallable, Category = StudioGame)
+	static void WindowedFullscreen(UObject* WorldContextObject);
 };

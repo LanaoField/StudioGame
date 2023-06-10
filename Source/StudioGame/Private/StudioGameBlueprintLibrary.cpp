@@ -13,6 +13,7 @@
 #include "VideoRecordingSystem.h"
 #include "Misc/FileHelper.h"
 #include "HAL/PlatformApplicationMisc.h"
+#include "GameFramework/GameUserSettings.h"
 #if PLATFORM_ANDROID
 #include "Android/AndroidJNI.h"
 #include "Android/AndroidApplication.h"
@@ -135,6 +136,10 @@ FString UStudioGameBlueprintLibrary::GetDeviceId()
 {
 #if UE_EDITOR
 	return TEXT("Development Editor");
+#elif PLATFORM_WINDOWS
+	FString MacAddressString = FPlatformMisc::GetMacAddressString();
+	FString DeviceId = FMD5::HashAnsiString(*MacAddressString);
+	return DeviceId;
 #else
 	return FPlatformMisc::GetDeviceId();
 #endif
@@ -312,4 +317,13 @@ bool UStudioGameBlueprintLibrary::IsSubsystemLoggedIn(APlayerController* InPlaye
 
 	const int32 LocalUserNum = Player->GetControllerId();
 	return OnlineIdentity->GetLoginStatus(LocalUserNum) == ELoginStatus::LoggedIn;
+}
+
+void UStudioGameBlueprintLibrary::WindowedFullscreen(UObject* WorldContextObject)
+{
+#if PLATFORM_WINDOWS && ENGINE_MAJOR_VERSION >= 5
+	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+	UGameViewportClient* GameViewportClient = World->GetGameViewport();
+	GameViewportClient->HandleToggleFullscreenCommand();
+#endif
 }
