@@ -2,6 +2,7 @@
 
 #include "Widgets/Input/SJoystick.h"
 #include "Launch/Resources/Version.h"
+#include "GameFramework/PlayerInput.h"
 #include "GameFramework/PlayerController.h"
 #include "Framework/Application/SlateApplication.h"
 

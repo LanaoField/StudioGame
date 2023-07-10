@@ -9,6 +9,7 @@
 AFollowCameraActor::AFollowCameraActor(const class FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 	, ViewDistance(50.f)
+	, bEnableFadeout(true)
 	, bKeepViewTransform(true)
 	, AdjustThreshold(50.f)
 	, AdjustSpeed(5.f)
@@ -74,7 +75,7 @@ void AFollowCameraActor::Tick(float DeltaTime)
 
 	const float LifeSpan = GetLifeSpan();
 	const bool bEnableCollision = GetActorEnableCollision();
-	if (!bEnableCollision && LifeSpan > 0.f)
+	if (bEnableFadeout && !bEnableCollision && LifeSpan > 0.f)
 	{
 		const FVector ActorScale = GetActorScale3D();
 		const FVector NewActorScale = FMath::VInterpTo(ActorScale, FVector::ZeroVector, DeltaTime, LifeSpan * 10.f);

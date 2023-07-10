@@ -4,7 +4,6 @@
 	{
 		"StudioAndroidPermission": "UE4Editor-StudioAndroidPermission.dll",
 		"StudioGame": "UE4Editor-StudioGame.dll",
-		"StudioGameplayAbilities": "UE4Editor-StudioGameplayAbilities.dll",
 		"StudioWebBrowser": "UE4Editor-StudioWebBrowser.dll"
 	}
 }

@@ -10,7 +10,7 @@ UCLASS()
 class STUDIOGAME_API AFollowCameraActor : public AActor
 {
 	GENERATED_UCLASS_BODY()
-	
+
 public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
@@ -23,6 +23,9 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, Category = Follow)
 	float ViewDistance;
+
+	UPROPERTY(EditAnywhere, Category = Follow)
+	bool bEnableFadeout;
 
 	UPROPERTY(EditAnywhere, Category = Follow)
 	bool bKeepViewTransform;
